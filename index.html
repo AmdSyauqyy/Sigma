@@ -92,7 +92,7 @@ tr.live td:first-child{padding-left:8px}tr.live td:last-child{padding-right:8px}
     <div class="card">
       <h2>Riwayat peringatan halangan</h2>
       <table>
-        <thead><tr><th>Waktu</th><th>Status</th><th>Jarak</th></tr></thead>
+        <thead><tr><th>Waktu</th><th>Jarak</th></tr></thead>
         <tbody id="hist"></tbody>
       </table>
       <p class="empty" id="histEmpty">Belum ada peringatan halangan</p>
@@ -106,6 +106,7 @@ tr.live td:first-child{padding-left:8px}tr.live td:last-child{padding-right:8px}
 // Samakan dengan URL di tab Data Firebase Anda
 const DB_URL = "https://sigma-d48ff-default-rtdb.asia-southeast1.firebasedatabase.app/sigma.json";
 const MAX = 400, KEEP = 15;
+const LOG_URL = DB_URL.replace('sigma.json', 'sigma_log.json') + '?orderBy=%22%24key%22&limitToLast=' + KEEP;
 const $ = id => document.getElementById(id);
 
 let state = {}, prevWarn = false, minDist = null, events = [];
@@ -132,27 +133,31 @@ function render(){
   $('msg').textContent = none ? 'Tidak ada pantulan dalam 4 meter'
     : near ? 'Ada halangan, jaraknya kurang dari 50 cm' : 'Jalur di depan aman';
 
-  // riwayat: satu baris per kejadian halangan, jarak terdekatnya yang dicatat
-  if (near) {
-    if (!prevWarn) {
-      events.unshift({ t: new Date().toTimeString().slice(0, 8), d });
-      events = events.slice(0, KEEP);
-    } else if (events.length && d < events[0].d) {
-      events[0].d = d;
-    }
-  }
+  // kejadian baru dicatat ESP32 ke Firebase, web cukup memuat ulang daftarnya
+  if (near !== prevWarn) setTimeout(loadLog, 900);
   prevWarn = near;
-  renderHist(near);
+  $('hist').firstElementChild && $('hist').firstElementChild.classList.toggle('live', near);
 }
 
-function renderHist(active){
+async function loadLog(){
+  try {
+    const j = await (await fetch(LOG_URL)).json();
+    events = Object.values(j || {}).sort((a, b) => b.time - a.time);
+    renderHist();
+  } catch (e) {}
+}
+
+function renderHist(){
   $('histEmpty').classList.toggle('hidden', events.length > 0);
-  $('hist').innerHTML = events.map((e, i) =>
-    '<tr class="' + (active && i === 0 ? 'live' : '') + '"><td>' + e.t + '</td><td>' +
-    (active && i === 0 ? 'Terdeteksi' : 'Selesai') + '</td><td>' + e.d.toFixed(1) + ' cm</td></tr>'
-  ).join('');
+  $('hist').innerHTML = events.map(e => {
+    const t = new Date(e.time);
+    const w = t.toLocaleDateString('id-ID', { day: '2-digit', month: 'short' }) + ' ' + t.toTimeString().slice(0, 8);
+    return '<tr><td>' + w + '</td><td>' + Number(e.distance).toFixed(1) + ' cm</td></tr>';
+  }).join('');
+  $('hist').firstElementChild && $('hist').firstElementChild.classList.toggle('live', prevWarn);
 }
 
+loadLog();
 const es = new EventSource(DB_URL);
 es.addEventListener('put', e => {
   const m = JSON.parse(e.data);
