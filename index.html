@@ -2,195 +2,167 @@
 <html lang="id">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>SIGMA | Jarak halangan</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>SIGMA Care | Jarak halangan</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:wght@400;500;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+
 <style>
-:root{
-  --base:#3A455F;
-  --deep:#2B3449;
-  --line:rgba(232,236,245,.16);
-  --text:#E8ECF5;
-  --muted:#A9B2C7;
-  --safe:#B9D3E8;
-  --warn:#F2C14E;
-  --warn-ink:#2B2410;
-}
+:root{--base:#3A455F;--deep:#2E374D;--bg:#F4F5F8;--line:rgba(255,255,255,.22);--ok:#3DBE7A;--warn:#F2B84B}
 *{box-sizing:border-box;margin:0}
-html,body{height:100%}
-body{
-  background:var(--base);color:var(--text);
-  font-family:"Schibsted Grotesk",system-ui,-apple-system,"Segoe UI",sans-serif;
-  display:flex;flex-direction:column;
-  padding:clamp(20px,4vw,48px);
-  padding-top:max(clamp(20px,4vw,48px),env(safe-area-inset-top));
-  padding-bottom:max(clamp(20px,4vw,48px),env(safe-area-inset-bottom));
-  transition:background .25s;
-}
-body.warn{background:#4A4533}
-header{display:flex;justify-content:space-between;align-items:baseline;gap:16px;
-  padding-bottom:16px;border-bottom:1px solid var(--line)}
-header h1{font-size:1.1rem;font-weight:800;letter-spacing:.01em}
-header p{font-size:.9rem;color:var(--muted);text-align:right}
+body{font-family:"Plus Jakarta Sans",system-ui,sans-serif;background:var(--bg);color:#1d2333;min-height:100vh}
+.wrap{max-width:460px;margin:0 auto;min-height:100vh;background:#fff;
+  padding-bottom:max(24px,env(safe-area-inset-bottom))}
+.top{display:flex;align-items:center;gap:9px;padding:max(14px,env(safe-area-inset-top)) 18px 14px;
+  font-weight:800;color:var(--base);font-size:1.05rem}
+.logo{width:40px;height:40px;border-radius:9px;background:var(--base);color:#fff;display:grid;
+  place-items:center;font-size:24px;font-weight:700}
+.stack{padding:4px 16px;display:flex;flex-direction:column;gap:14px}
+.card{background:var(--base);color:#fff;border-radius:16px;padding:16px;transition:background .25s}
+.card h2{font-size:.8rem;font-weight:700;margin-bottom:10px}
 
-main{flex:1;display:flex;flex-direction:column;justify-content:center;gap:clamp(28px,6vh,56px);
-  max-width:960px;width:100%;margin:0 auto;padding:24px 0}
+.head{display:flex;justify-content:space-between;align-items:center;gap:10px;
+  padding-bottom:12px;border-bottom:1px solid var(--line)}
+.head b{font-size:.95rem}.head small{display:block;font-size:.75rem;opacity:.85;margin-top:2px}
+.badge{font-size:.72rem;font-weight:700;padding:5px 11px;border-radius:99px;
+  background:#dff5e8;color:#157a45;white-space:nowrap}
+.badge.warn{background:#fdf0cf;color:#8a5a00}
+.badge.off{background:#e6e8ee;color:#555d73}
+.pair{display:flex;justify-content:space-between;padding-top:12px;font-size:.72rem}
+.pair span{display:block;opacity:.8;margin-bottom:3px}
+.pair b{font-size:.8rem;font-variant-numeric:tabular-nums}
+.pair div:last-child{text-align:right}
 
-.reading{display:flex;align-items:baseline;gap:.15em;line-height:.9}
-#num{font-size:clamp(5.5rem,24vw,12rem);font-weight:800;letter-spacing:-.04em;
-  font-variant-numeric:tabular-nums}
-#num.off{font-size:clamp(2.6rem,10vw,5rem);letter-spacing:-.02em;color:var(--muted)}
-#unit{font-size:clamp(1.6rem,5vw,2.6rem);font-weight:500;color:var(--muted)}
+.dist{display:flex;align-items:baseline;gap:6px}
+#num{font-size:4rem;font-weight:800;letter-spacing:-.03em;font-variant-numeric:tabular-nums;line-height:1}
+#num.off{font-size:1.4rem;letter-spacing:0;opacity:.8}
+#unit{opacity:.8;font-size:1.05rem}
+#msg{margin-top:8px;font-size:.85rem;opacity:.9}
+.bar{position:relative;height:12px;background:var(--deep);border-radius:9px;margin:16px 0 6px;overflow:hidden}
+.bar .z{position:absolute;inset:0 auto 0 0;width:12.5%;
+  background:repeating-linear-gradient(135deg,var(--warn) 0 5px,transparent 5px 10px);opacity:.55}
+#fill{position:absolute;inset:0 auto 0 0;width:0;background:#fff;border-radius:9px;opacity:.92;
+  transition:width .15s linear}
+.scale{display:flex;justify-content:space-between;font-size:.68rem;opacity:.75}
 
-#msg{margin-top:14px;font-size:clamp(1.15rem,3vw,1.6rem);font-weight:500;color:var(--safe)}
-body.warn #msg{color:var(--warn);font-weight:700}
+.card.near{background:#5B4F2E}
+.card.near #fill{background:var(--warn)}
 
-/* pita ukur */
-.tape{position:relative;height:84px;margin-top:8px}
-.tape .rail{position:absolute;left:0;right:0;top:34px;height:2px;background:var(--line)}
-.tape .zone{position:absolute;left:0;top:18px;height:34px;width:12.5%;
-  background:repeating-linear-gradient(135deg,var(--warn) 0 6px,transparent 6px 12px);
-  opacity:.28;border-right:2px solid var(--warn)}
-body.warn .tape .zone{opacity:.7}
-.tick{position:absolute;top:34px;width:1px;height:8px;background:var(--muted);opacity:.6}
-.tick.major{height:16px;opacity:1}
-.lbl{position:absolute;top:58px;transform:translateX(-50%);font-size:.8rem;color:var(--muted);
-  font-variant-numeric:tabular-nums}
-.lbl:first-of-type{transform:none}
-#pin{position:absolute;top:6px;left:0;width:0;height:58px;transition:left .14s linear,opacity .2s}
-#pin::before{content:"";position:absolute;left:-1px;top:0;width:3px;height:100%;background:var(--text)}
-#pin::after{content:"";position:absolute;left:-7px;top:-6px;width:0;height:0;
-  border:7px solid transparent;border-top:9px solid var(--text);border-bottom:0}
-body.warn #pin::before{background:var(--warn)}
-body.warn #pin::after{border-top-color:var(--warn)}
-#pin.hide{opacity:0}
-.zone-note{position:absolute;left:0;top:-14px;font-size:.8rem;color:var(--warn)}
-
-/* riwayat */
-.trend h2{font-size:.9rem;font-weight:500;color:var(--muted);margin-bottom:8px}
-.trend svg{display:block;width:100%;height:84px;background:var(--deep);border:1px solid var(--line)}
-.trend polyline{fill:none;stroke:var(--safe);stroke-width:2;vector-effect:non-scaling-stroke;
-  stroke-linejoin:round}
-.trend line{stroke:var(--warn);stroke-width:1;stroke-dasharray:4 4;opacity:.6;vector-effect:non-scaling-stroke}
-
-footer{display:flex;align-items:center;gap:10px;font-size:.9rem;color:var(--muted);
-  padding-top:16px;border-top:1px solid var(--line)}
-#dot{width:9px;height:9px;border-radius:50%;background:var(--muted)}
-#dot.on{background:var(--safe)}
-#dot.err{background:var(--warn)}
-
+table{width:100%;border-collapse:collapse;font-size:.78rem}
+th{text-align:left;font-weight:700;padding:0 0 8px;border-bottom:1px solid var(--line)}
+td{padding:8px 0;font-variant-numeric:tabular-nums}
+th:last-child,td:last-child{text-align:right}
+tr.live td{background:var(--warn);color:#2b2410;font-weight:700}
+tr.live td:first-child{padding-left:8px}tr.live td:last-child{padding-right:8px}
+.empty{text-align:center;opacity:.8;font-size:.8rem;padding:22px 0 8px}
+.hidden{display:none}
+.conn{font-size:.72rem;color:#6b7390;text-align:center;display:flex;gap:7px;justify-content:center;
+  align-items:center;margin-top:2px}
+.conn i{width:8px;height:8px;border-radius:50%;background:#aab}
+.conn i.on{background:var(--ok)}.conn i.err{background:var(--warn)}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
 </head>
 <body>
-<header>
-  <h1>SIGMA</h1>
-  <p>Pemantauan jarak halangan</p>
-</header>
+<div class="wrap">
+  <div class="top"><div class="logo">Σ</div>SIGMA Care</div>
 
-<main>
-  <section>
-    <div class="reading"><span id="num">--</span><span id="unit">cm</span></div>
-    <p id="msg">Menunggu data dari tongkat</p>
-  </section>
+  <div class="stack">
+    <div class="card">
+      <div class="head">
+        <div><b>Tongkat SIGMA</b><small>Sistem pemantauan jarak halangan</small></div>
+        <span class="badge off" id="badge">Menunggu</span>
+      </div>
+      <div class="pair">
+        <div><span>Sinyal masuk</span><b id="sig">--:--:--</b></div>
+        <div><span>Batas peringatan</span><b>50 cm</b></div>
+      </div>
+    </div>
 
-  <section class="tape" aria-hidden="true">
-    <span class="zone-note">Zona peringatan, 50 cm</span>
-    <div class="rail"></div>
-    <div class="zone"></div>
-    <div id="ticks"></div>
-    <div id="pin" class="hide"></div>
-  </section>
+    <div class="card" id="distCard">
+      <h2>Jarak halangan di depan</h2>
+      <div class="dist"><span id="num">--</span><span id="unit">cm</span></div>
+      <p id="msg">Menunggu data dari tongkat</p>
+      <div class="bar"><div class="z"></div><div id="fill"></div></div>
+      <div class="scale"><span>0</span><span>100</span><span>200</span><span>300</span><span>400 cm</span></div>
+    </div>
 
-  <section class="trend">
-    <h2>Beberapa detik terakhir</h2>
-    <svg viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
-      <line x1="0" x2="100" y1="87.5" y2="87.5"/>
-      <polyline id="line" points=""/>
-    </svg>
-  </section>
-</main>
+    <div class="card">
+      <h2>Riwayat peringatan halangan</h2>
+      <table>
+        <thead><tr><th>Waktu</th><th>Status</th><th>Jarak</th></tr></thead>
+        <tbody id="hist"></tbody>
+      </table>
+      <p class="empty" id="histEmpty">Belum ada peringatan halangan</p>
+    </div>
 
-<footer>
-  <span id="dot"></span><span id="conn">Menghubungkan ke Firebase</span>
-</footer>
+    <p class="conn"><i id="dot"></i><span id="conn">Menghubungkan ke Firebase</span></p>
+  </div>
+</div>
 
 <script>
 // Samakan dengan URL di tab Data Firebase Anda
 const DB_URL = "https://sigma-d48ff-default-rtdb.asia-southeast1.firebasedatabase.app/sigma.json";
-const MAX = 400, WARN_AT = 50, HISTORY = 120;
-
-let state = { distance: -1, warning: false };
-const hist = [];
-
-// pita ukur: garis tiap 10 cm, angka tiap 100 cm
-const ticks = document.getElementById('ticks');
-for (let cm = 0; cm <= MAX; cm += 10) {
-  const t = document.createElement('div');
-  t.className = 'tick' + (cm % 50 === 0 ? ' major' : '');
-  t.style.left = (cm / MAX * 100) + '%';
-  ticks.appendChild(t);
-  if (cm % 100 === 0) {
-    const l = document.createElement('span');
-    l.className = 'lbl';
-    l.textContent = cm;
-    l.style.left = (cm / MAX * 100) + '%';
-    ticks.appendChild(l);
-  }
-}
-
+const MAX = 400, KEEP = 15;
 const $ = id => document.getElementById(id);
 
-function render() {
-  const d = Number(state.distance);
-  const none = !(d >= 0);
-  const warn = !!state.warning && !none;
+let state = {}, prevWarn = false, minDist = null, events = [];
 
-  document.body.classList.toggle('warn', warn);
+function conn(k, t){ $('dot').className = k; $('conn').textContent = t; }
+
+function render(){
+  const d = Number(state.distance);
+  const none = !(d >= 0) || state.distance == null;
+  const near = state.warning === true && !none;
+
+  $('sig').textContent = new Date().toTimeString().slice(0, 8);
 
   const num = $('num');
   num.classList.toggle('off', none);
   num.textContent = none ? 'Di luar jangkauan' : d.toFixed(1);
-  $('unit').style.display = none ? 'none' : '';
+  $('unit').classList.toggle('hidden', none);
+  $('fill').style.width = none ? '0' : Math.min(d, MAX) / MAX * 100 + '%';
+  $('distCard').classList.toggle('near', near);
 
-  $('msg').textContent = none
-    ? 'Tidak ada pantulan dalam 4 meter'
-    : warn ? 'Ada halangan di depan, jaraknya kurang dari 50 cm'
-           : 'Jalur di depan aman';
+  const b = $('badge');
+  b.className = 'badge' + (near ? ' warn' : '');
+  b.textContent = near ? 'Halangan dekat' : 'Aman';
+  $('msg').textContent = none ? 'Tidak ada pantulan dalam 4 meter'
+    : near ? 'Ada halangan, jaraknya kurang dari 50 cm' : 'Jalur di depan aman';
 
-  const pin = $('pin');
-  pin.classList.toggle('hide', none);
-  if (!none) pin.style.left = Math.min(d, MAX) / MAX * 100 + '%';
-
-  hist.push(none ? MAX : Math.min(d, MAX));
-  if (hist.length > HISTORY) hist.shift();
-  $('line').setAttribute('points',
-    hist.map((v, i) => (i / (HISTORY - 1) * 100).toFixed(1) + ',' + (100 - v / MAX * 100).toFixed(1)).join(' '));
+  // riwayat: satu baris per kejadian halangan, jarak terdekatnya yang dicatat
+  if (near) {
+    if (!prevWarn) {
+      events.unshift({ t: new Date().toTimeString().slice(0, 8), d });
+      events = events.slice(0, KEEP);
+    } else if (events.length && d < events[0].d) {
+      events[0].d = d;
+    }
+  }
+  prevWarn = near;
+  renderHist(near);
 }
 
-function setConn(kind, text) {
-  $('dot').className = kind;
-  $('conn').textContent = text;
+function renderHist(active){
+  $('histEmpty').classList.toggle('hidden', events.length > 0);
+  $('hist').innerHTML = events.map((e, i) =>
+    '<tr class="' + (active && i === 0 ? 'live' : '') + '"><td>' + e.t + '</td><td>' +
+    (active && i === 0 ? 'Terdeteksi' : 'Selesai') + '</td><td>' + e.d.toFixed(1) + ' cm</td></tr>'
+  ).join('');
 }
 
 const es = new EventSource(DB_URL);
-
 es.addEventListener('put', e => {
   const m = JSON.parse(e.data);
   if (m.path === '/') { if (m.data) state = m.data; }
   else state[m.path.slice(1)] = m.data;
-  setConn('on', 'Terhubung, data masuk langsung');
+  conn('on', 'Terhubung, data masuk langsung');
   render();
 });
-
-es.addEventListener('patch', e => {
-  Object.assign(state, JSON.parse(e.data).data);
-  render();
-});
-
-es.onerror = () => setConn('err', 'Koneksi terputus, mencoba lagi');
+es.addEventListener('patch', e => { Object.assign(state, JSON.parse(e.data).data); render(); });
+es.onerror = () => conn('err', 'Koneksi terputus, mencoba lagi');
 </script>
 </body>
 </html>
