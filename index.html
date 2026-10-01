@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Monitor Jarak SIGMA</title>
+<style>
+  body{font-family:sans-serif;text-align:center;margin-top:40px}
+  #d{font-size:4em}
+  #s{font-size:1.4em;margin-top:10px}
+  .ok{color:green} .bad{color:red}
+  #c{margin-top:30px;font-size:.9em;color:gray}
+</style>
+</head>
+<body>
+<h2>Deteksi Halangan SIGMA</h2>
+<div id="d">--</div>
+<div id="s"></div>
+<div id="c">Menghubungkan...</div>
+
+<script>
+// Samakan dengan URL di tab Data Firebase Anda
+const DB_URL = "https://sigma-d48ff-default-rtdb.asia-southeast1.firebasedatabase.app/sigma.json";
+
+let state = { distance: -1, warning: false };
+
+function render() {
+  document.getElementById('d').textContent =
+    state.distance < 0 ? 'Di luar jangkauan' : Number(state.distance).toFixed(1) + ' cm';
+  const s = document.getElementById('s');
+  s.textContent = state.warning ? 'PERINGATAN! Objek terlalu dekat!' : 'Aman';
+  s.className = state.warning ? 'bad' : 'ok';
+}
+
+const es = new EventSource(DB_URL);
+
+es.addEventListener('put', e => {
+  const m = JSON.parse(e.data);
+  if (m.path === '/') { if (m.data) state = m.data; }
+  else state[m.path.slice(1)] = m.data;
+  document.getElementById('c').textContent = 'Terhubung ke Firebase';
+  render();
+});
+
+es.addEventListener('patch', e => {
+  Object.assign(state, JSON.parse(e.data).data);
+  render();
+});
+
+es.onerror = () => {
+  document.getElementById('c').textContent = 'Terputus, mencoba menyambung lagi...';
+};
+</script>
+</body>
+</html>
