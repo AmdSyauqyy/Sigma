@@ -1,154 +1,930 @@
+
 <!DOCTYPE html>
 <html lang="id">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>SIGMA Care | Jarak halangan</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SIGMA Care</title>
+
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;700;800&display=swap" rel="stylesheet">
 
-<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet"
+href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css">
+
 <style>
-:root{--base:#3A455F;--deep:#2E374D;--bg:#F4F5F8;--line:rgba(255,255,255,.22);--ok:#3DBE7A;--warn:#F2B84B}
-*{box-sizing:border-box;margin:0}
-body{font-family:"Plus Jakarta Sans",system-ui,sans-serif;background:var(--bg);color:#1d2333;min-height:100vh}
-.wrap{max-width:460px;margin:0 auto;min-height:100vh;background:#fff;
-  padding-bottom:max(24px,env(safe-area-inset-bottom))}
-.top{display:flex;align-items:center;gap:9px;padding:max(14px,env(safe-area-inset-top)) 18px 14px;
-  font-weight:800;color:var(--base);font-size:1.05rem}
-.logo{width:40px;height:40px;border-radius:9px;background:var(--base);color:#fff;display:grid;
-  place-items:center;font-size:24px;font-weight:700}
-.stack{padding:4px 16px;display:flex;flex-direction:column;gap:14px}
-.card{background:var(--base);color:#fff;border-radius:16px;padding:16px;transition:background .25s}
-.card h2{font-size:.8rem;font-weight:700;margin-bottom:10px}
+:root {
+    --slate:#3b4660;
+    --slate2:#2f394f;
+    --ink:#334155;
+    --mint:#dcf5e5;
+    --mintTx:#15803d;
+    --red:#fde2e2;
+    --redTx:#b91c1c;
+    --gold:#a8895a;
+    --mute:#cbd3e1;
+    --ok:#22c55e;
+    --bad:#ef4444;
+}
 
-.head{display:flex;justify-content:space-between;align-items:center;gap:10px;
-  padding-bottom:12px;border-bottom:1px solid var(--line)}
-.head b{font-size:.95rem}.head small{display:block;font-size:.75rem;opacity:.85;margin-top:2px}
-.badge{font-size:.72rem;font-weight:700;padding:5px 11px;border-radius:99px;
-  background:#dff5e8;color:#157a45;white-space:nowrap}
-.badge.warn{background:#fdf0cf;color:#8a5a00}
-.badge.off{background:#e6e8ee;color:#555d73}
-.pair{display:flex;justify-content:space-between;padding-top:12px;font-size:.72rem}
-.pair span{display:block;opacity:.8;margin-bottom:3px}
-.pair b{font-size:.8rem;font-variant-numeric:tabular-nums}
-.pair div:last-child{text-align:right}
+* {
+    box-sizing:border-box;
+    margin:0;
+}
 
-.dist{display:flex;align-items:baseline;gap:6px}
-#num{font-size:4rem;font-weight:800;letter-spacing:-.03em;font-variant-numeric:tabular-nums;line-height:1}
-#num.off{font-size:1.4rem;letter-spacing:0;opacity:.8}
-#unit{opacity:.8;font-size:1.05rem}
-#msg{margin-top:8px;font-size:.85rem;opacity:.9}
-.bar{position:relative;height:12px;background:var(--deep);border-radius:9px;margin:16px 0 6px;overflow:hidden}
-.bar .z{position:absolute;inset:0 auto 0 0;width:12.5%;
-  background:repeating-linear-gradient(135deg,var(--warn) 0 5px,transparent 5px 10px);opacity:.55}
-#fill{position:absolute;inset:0 auto 0 0;width:0;background:#fff;border-radius:9px;opacity:.92;
-  transition:width .15s linear}
-.scale{display:flex;justify-content:space-between;font-size:.68rem;opacity:.75}
+body {
+    font-family:'Plus Jakarta Sans',system-ui,sans-serif;
+    background:#fff;
+    color:var(--ink);
+    display:flex;
+    justify-content:center;
+}
 
-.card.near{background:#5B4F2E}
-.card.near #fill{background:var(--warn)}
+main {
+    width:100%;
+    max-width:1180px;
+    padding:22px 24px 28px;
+}
 
-.deco{position:relative;overflow:hidden;padding:0;min-height:150px}
-.deco svg{display:block;width:100%;height:150px}
-.deco p{position:absolute;right:16px;bottom:14px;text-align:right;font-size:.72rem;font-weight:600;
-  line-height:1.4;opacity:.85}
-.obs{animation:blink 2.4s ease-in-out infinite}
-@keyframes blink{50%{opacity:.35}}
-.hidden{display:none}
-.conn{font-size:.72rem;color:#6b7390;text-align:center;display:flex;gap:7px;justify-content:center;
-  align-items:center;margin-top:2px}
-.conn i{width:8px;height:8px;border-radius:50%;background:#aab}
-.conn i.on{background:var(--ok)}.conn i.err{background:var(--warn)}
-@media (prefers-reduced-motion:reduce){*{transition:none!important}.obs{animation:none}}
+.grid {
+    display:grid;
+    grid-template-columns:minmax(0,5fr) minmax(0,6fr);
+    gap:21px;
+    align-items:stretch;
+}
+
+.col {
+    display:flex;
+    flex-direction:column;
+}
+
+.col .card {
+    margin-bottom:21px;
+}
+
+.col:last-child .card {
+    margin-bottom:0;
+}
+
+.mapcard {
+    display:flex;
+    flex-direction:column;
+    height:100%;
+}
+
+.radar {
+    position:relative;
+    height:210px;
+    padding:0;
+    overflow:hidden;
+    margin-bottom:0!important;
+}
+
+.radar svg {
+    position:absolute;
+    inset:0;
+    width:100%;
+    height:100%;
+}
+
+.radar .cap {
+    position:absolute;
+    right:24px;
+    bottom:18px;
+    text-align:right;
+    font-weight:700;
+    font-size:16px;
+    line-height:1.3;
+}
+
+#obj {
+    transition:cx .5s;
+}
+
+.brand {
+    display:flex;
+    align-items:center;
+    gap:14px;
+    margin-bottom:22px;
+}
+
+.logo {
+    width:60px;
+    height:60px;
+    border-radius:14px;
+    background:var(--slate);
+    color:#fff;
+    font-size:34px;
+    font-weight:800;
+    display:grid;
+    place-items:center;
+}
+
+h1 {
+    font-size:25px;
+    font-weight:700;
+}
+
+.card {
+    background:var(--slate);
+    color:#fff;
+    border-radius:28px;
+    padding:24px;
+    margin-bottom:21px;
+}
+
+.row {
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-start;
+    gap:12px;
+}
+
+.card h2 {
+    font-size:21px;
+    font-weight:700;
+}
+
+.card p.s {
+    color:var(--mute);
+    margin-top:2px;
+    font-size:16px;
+}
+
+.badge {
+    padding:9px 17px;
+    border-radius:99px;
+    font-weight:700;
+    font-size:16px;
+    background:var(--mint);
+    color:var(--mintTx);
+}
+
+.badge.warn {
+    background:var(--red);
+    color:var(--redTx);
+}
+
+hr {
+    border:0;
+    border-top:1px solid rgba(255,255,255,.15);
+    margin:18px 0;
+}
+
+.k {
+    color:var(--mute);
+    font-size:16px;
+}
+
+.v {
+    font-weight:700;
+    font-size:19px;
+}
+
+.r {
+    text-align:right;
+}
+
+.big {
+    font-size:35px;
+    font-weight:800;
+    margin:8px 0 4px;
+    color:var(--mute);
+}
+
+.big.warn {
+    color:#ffb4b4;
+}
+
+.bar {
+    height:19px;
+    border-radius:99px;
+    background:var(--slate2);
+    overflow:hidden;
+    margin-top:22px;
+}
+
+.fill {
+    height:100%;
+    width:0;
+    transition:width .5s;
+    background:repeating-linear-gradient(
+        120deg,
+        var(--gold) 0 10px,
+        #3b4660 10px 18px
+    );
+}
+
+.scale {
+    display:flex;
+    justify-content:space-between;
+    color:var(--mute);
+    margin-top:8px;
+    font-size:16px;
+}
+
+#map {
+    flex:1;
+    min-height:420px;
+    border-radius:20px;
+    margin-top:16px;
+    background:var(--slate2);
+    z-index:0;
+}
+
+.gps {
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:14px 12px;
+    margin-top:16px;
+}
+
+.btn {
+    display:inline-block;
+    margin-top:16px;
+    padding:11px 18px;
+    border-radius:99px;
+    background:#fff;
+    color:var(--slate);
+    font-weight:700;
+    text-decoration:none;
+    font-size:15px;
+}
+
+.btn.off {
+    opacity:.4;
+    pointer-events:none;
+}
+
+.status {
+    text-align:center;
+    color:#64748b;
+    font-size:14px;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    gap:9px;
+    flex-wrap:wrap;
+}
+
+.dot {
+    width:12px;
+    height:12px;
+    border-radius:50%;
+    background:var(--ok);
+}
+
+.dot.off {
+    background:var(--bad);
+}
+
+@media(max-width:900px) {
+    .grid {
+        grid-template-columns:1fr;
+    }
+
+    .mapcard {
+        height:auto;
+    }
+
+    #map {
+        min-height:340px;
+        flex:none;
+        height:340px;
+    }
+}
+
+@media(max-width:480px) {
+    main {
+        padding:16px;
+    }
+
+    .big {
+        font-size:28px;
+    }
+}
 </style>
 </head>
+
 <body>
-<div class="wrap">
-  <div class="top"><div class="logo">Σ</div>SIGMA Care</div>
 
-  <div class="stack">
-    <div class="card">
-      <div class="head">
-        <div><b>Tongkat SIGMA</b><small>Sistem pemantauan jarak halangan</small></div>
-        <span class="badge off" id="badge">Menunggu</span>
-      </div>
-      <div class="pair">
-        <div><span>Sinyal masuk</span><b id="sig">--:--:--</b></div>
-        <div><span>Batas peringatan</span><b>50 cm</b></div>
-      </div>
-    </div>
+<main>
 
-    <div class="card" id="distCard">
-      <h2>Jarak halangan di depan</h2>
-      <div class="dist"><span id="num">--</span><span id="unit">cm</span></div>
-      <p id="msg">Menunggu data dari tongkat</p>
-      <div class="bar"><div class="z"></div><div id="fill"></div></div>
-      <div class="scale"><span>0</span><span>100</span><span>200</span><span>300</span><span>400 cm</span></div>
-    </div>
-
-    <div class="card deco" aria-hidden="true">
-      <svg viewBox="0 0 400 170" preserveAspectRatio="xMidYMid slice">
-        <g fill="none" stroke="#fff" stroke-linecap="round">
-          <path d="M96 55 A44 44 0 0 1 96 115" stroke-width="2" opacity=".9"/>
-          <path d="M122 38 A72 72 0 0 1 122 132" stroke-width="2" opacity=".65"/>
-          <path d="M150 22 A104 104 0 0 1 150 148" stroke-width="2" opacity=".42"/>
-          <path d="M178 8 A138 138 0 0 1 178 162" stroke-width="2" opacity=".24"/>
-          <path d="M206 -4 A172 172 0 0 1 206 174" stroke-width="2" opacity=".12"/>
-        </g>
-        <circle cx="62" cy="85" r="9" fill="#fff"/>
-        <circle cx="62" cy="85" r="18" fill="none" stroke="#fff" stroke-width="2" opacity=".35"/>
-        <circle class="obs" cx="305" cy="85" r="6" fill="#F2B84B"/>
-      </svg>
-      <p>Smart Intelligent Guidance<br>&amp; Mobility Assistant</p>
-    </div>
-
-    <p class="conn"><i id="dot"></i><span id="conn">Menghubungkan ke Firebase</span></p>
-  </div>
+<div class="brand">
+    <div class="logo">Σ</div>
+    <h1>SIGMA Care</h1>
 </div>
 
+<div class="grid">
+
+<!-- KOLOM SENSOR -->
+<div class="col">
+
+<section class="card">
+
+    <div class="row">
+        <div>
+            <h2>Tongkat SIGMA</h2>
+            <p class="s">Sistem pemantauan jarak halangan</p>
+        </div>
+
+        <span class="badge" id="badge">Menunggu</span>
+    </div>
+
+    <hr>
+
+    <div class="row">
+        <div>
+            <div class="k">Sinyal masuk</div>
+            <div class="v" id="sinyal">--:--:--</div>
+        </div>
+
+        <div class="r">
+            <div class="k">Batas peringatan</div>
+            <div class="v">
+                <span id="batas">50</span> cm
+            </div>
+        </div>
+    </div>
+
+</section>
+
+<section class="card">
+
+    <div class="v" style="font-size:18px">
+        Jarak halangan di depan
+    </div>
+
+    <div class="big" id="jarak">
+        Menunggu data
+    </div>
+
+    <p class="s" id="jarakSub" style="color:var(--mute)">
+        Belum ada data dari tongkat
+    </p>
+
+    <div class="bar">
+        <div class="fill" id="fill"></div>
+    </div>
+
+    <div class="scale">
+        <span>0</span>
+        <span>100</span>
+        <span>200</span>
+        <span>300</span>
+        <span>400 cm</span>
+    </div>
+
+</section>
+
+<section class="card radar" aria-hidden="true">
+
+    <svg viewBox="0 0 600 210"
+         preserveAspectRatio="xMidYMid slice">
+
+        <circle cx="90" cy="105" r="30"
+                fill="none"
+                stroke="#8b96ad"
+                stroke-width="3"/>
+
+        <circle cx="90" cy="105" r="15"
+                fill="#fff"/>
+
+        <path d="M135 65 Q152 105 135 145"
+              fill="none"
+              stroke="#fff"
+              stroke-width="3"/>
+
+        <path d="M170 45 Q205 105 170 165"
+              fill="none"
+              stroke="#e5e9f2"
+              stroke-width="3"/>
+
+        <path d="M212 20 Q268 105 212 190"
+              fill="none"
+              stroke="#b7c0d3"
+              stroke-width="3"/>
+
+        <path d="M262 5 Q330 105 262 205"
+              fill="none"
+              stroke="#8b96ad"
+              stroke-width="3"/>
+
+        <path d="M318 0 Q392 105 318 210"
+              fill="none"
+              stroke="#6b7690"
+              stroke-width="3"/>
+
+        <circle id="obj"
+                cx="560"
+                cy="105"
+                r="10"
+                fill="#a8895a"/>
+
+    </svg>
+
+    <div class="cap">
+        Smart Intelligent Guidance<br>
+        &amp; Mobility Assistant
+    </div>
+
+</section>
+
+</div>
+
+
+<!-- KOLOM MAPS -->
+<div class="col">
+
+<section class="card mapcard">
+
+    <div class="row">
+        <div>
+            <h2>Lokasi pengguna</h2>
+            <p class="s" id="gpsInfo">
+                Menunggu data GPS
+            </p>
+        </div>
+    </div>
+
+    <div id="map"></div>
+
+    <div class="gps">
+
+        <div>
+            <div class="k">Latitude</div>
+            <div class="v" id="lat">-</div>
+        </div>
+
+        <div class="r">
+            <div class="k">Longitude</div>
+            <div class="v" id="lng">-</div>
+        </div>
+
+        <div>
+            <div class="k">Waktu GPS (WIB)</div>
+            <div class="v" id="wgps">-</div>
+        </div>
+
+        <div class="r">
+            <div class="k">Satelit / Kecepatan</div>
+            <div class="v" id="sat">-</div>
+        </div>
+
+    </div>
+
+    <div>
+        <a class="btn off"
+           id="gmaps"
+           target="_blank"
+           rel="noopener">
+            Buka di Google Maps
+        </a>
+    </div>
+
+</section>
+
+</div>
+</div>
+
+
+<div class="status" style="margin-top:21px">
+    <span class="dot off" id="dot"></span>
+    <span id="stat">Menghubungkan ke Firebase...</span>
+</div>
+
+</main>
+
+
+<!-- LEAFLET -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js"></script>
+
+
 <script>
-// Samakan dengan URL di tab Data Firebase Anda
-const DB_URL = "https://sigma-d48ff-default-rtdb.asia-southeast1.firebasedatabase.app/sigma.json";
-const MAX = 400;
+
+// =================================================
+// 1. KONFIGURASI FIREBASE
+// =================================================
+
+const DB_URL =
+"https://sigma-d48ff-default-rtdb.asia-southeast1.firebasedatabase.app/sigma.json";
+
+const BATAS_CM = 50;
+const MAX_DISTANCE = 400;
+
 const $ = id => document.getElementById(id);
+
+$("batas").textContent = BATAS_CM;
+
+
+// =================================================
+// 2. INISIALISASI MAPS
+// =================================================
+
+let map = null;
+let marker = null;
+let jejak = null;
+let firstGPS = true;
+
+function initMap() {
+
+    if (typeof L === "undefined") {
+        $("gpsInfo").textContent =
+            "Leaflet gagal dimuat. Periksa koneksi internet.";
+        return;
+    }
+
+    map = L.map("map").setView([-2.5, 118], 4);
+
+    L.tileLayer(
+        "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+        {
+            maxZoom:19,
+            attribution:"&copy; OpenStreetMap contributors"
+        }
+    ).addTo(map);
+
+    jejak = L.polyline([], {
+        color:"#a8895a",
+        weight:4
+    }).addTo(map);
+
+    setTimeout(() => map.invalidateSize(), 500);
+}
+
+initMap();
+
+window.addEventListener("resize", () => {
+    if (map) map.invalidateSize();
+});
+
+
+// =================================================
+// 3. DATA FIREBASE
+// =================================================
 
 let state = {};
 
-function conn(k, t){ $('dot').className = k; $('conn').textContent = t; }
 
-function render(){
-  const d = Number(state.distance);
-  const none = !(d >= 0) || state.distance == null;
-  const near = state.warning === true && !none;
+// =================================================
+// 4. UPDATE SENSOR HC-SR04
+// =================================================
 
-  $('sig').textContent = new Date().toTimeString().slice(0, 8);
+function updateJarak() {
 
-  const num = $('num');
-  num.classList.toggle('off', none);
-  num.textContent = none ? 'Di luar jangkauan' : d.toFixed(1);
-  $('unit').classList.toggle('hidden', none);
-  $('fill').style.width = none ? '0' : Math.min(d, MAX) / MAX * 100 + '%';
-  $('distCard').classList.toggle('near', near);
+    const distance = Number(state.distance);
 
-  const b = $('badge');
-  b.className = 'badge' + (near ? ' warn' : '');
-  b.textContent = near ? 'Halangan dekat' : 'Aman';
-  $('msg').textContent = none ? 'Tidak ada pantulan dalam 4 meter'
-    : near ? 'Ada halangan, jaraknya kurang dari 50 cm' : 'Jalur di depan aman';
+    const invalid =
+        state.distance == null ||
+        !Number.isFinite(distance) ||
+        distance < 0 ||
+        distance > MAX_DISTANCE;
 
+    if (invalid) {
+
+        $("jarak").textContent = "Di luar jangkauan";
+
+        $("jarakSub").textContent =
+            "Tidak ada pantulan dalam 4 meter";
+
+        $("jarak").className = "big";
+
+        $("badge").textContent = "Aman";
+        $("badge").className = "badge";
+
+        $("fill").style.width = "0%";
+
+        $("obj").setAttribute("cx", 560);
+
+        return;
+    }
+
+    const warning = state.warning === true;
+    const bahaya = warning || distance <= BATAS_CM;
+
+    $("jarak").textContent =
+        distance.toFixed(1) + " cm";
+
+    $("jarak").className =
+        "big" + (bahaya ? " warn" : "");
+
+    $("jarakSub").textContent = bahaya
+        ? "Halangan berada dalam batas peringatan"
+        : "Jarak halangan terdeteksi";
+
+    $("fill").style.width =
+        Math.max(0, Math.min(100,
+            distance / MAX_DISTANCE * 100
+        )) + "%";
+
+    $("obj").setAttribute(
+        "cx",
+        140 + (distance / MAX_DISTANCE * 420)
+    );
+
+    $("badge").textContent =
+        bahaya ? "Waspada" : "Aman";
+
+    $("badge").className =
+        "badge" + (bahaya ? " warn" : "");
 }
 
+
+// =================================================
+// 5. UPDATE GPS DAN MAPS
+// =================================================
+
+function wib(utc) {
+
+    const match = /^(\d{1,2}):(\d{2}):(\d{2})$/.exec(
+        utc || ""
+    );
+
+    if (!match) return "-";
+
+    const hour = (Number(match[1]) + 7) % 24;
+
+    return String(hour).padStart(2, "0") +
+        ":" + match[2] +
+        ":" + match[3];
+}
+
+
+function updateLokasi() {
+
+    const d = state.lokasi;
+
+    if (!d || typeof d !== "object") {
+
+        $("gpsInfo").textContent =
+            "Belum ada data GPS di Firebase";
+
+        return;
+    }
+
+    const lat = Number(d.lat);
+    const lng = Number(d.lng);
+
+    const fix = d.fix === true || d.fix === 1;
+
+    if (
+        !fix ||
+        !Number.isFinite(lat) ||
+        !Number.isFinite(lng) ||
+        Math.abs(lat) > 90 ||
+        Math.abs(lng) > 180
+    ) {
+
+        $("gpsInfo").textContent =
+            "GPS belum mendapatkan koordinat valid";
+
+        $("sat").textContent =
+            (d.sat ?? 0) + " satelit";
+
+        return;
+    }
+
+    $("gpsInfo").textContent =
+        "Lokasi terakhir berhasil diterima";
+
+    $("lat").textContent = lat.toFixed(6);
+    $("lng").textContent = lng.toFixed(6);
+
+    $("wgps").textContent = wib(d.waktu_utc);
+
+    $("sat").textContent =
+        (d.sat ?? "-") + " / " +
+        Number(d.kecepatan || 0).toFixed(1) +
+        " km/j";
+
+    const g = $("gmaps");
+
+    g.href =
+        d.link ||
+        `https://www.google.com/maps?q=${lat},${lng}`;
+
+    g.classList.remove("off");
+
+
+    // Update marker
+
+    const position = [lat, lng];
+
+    if (!marker) {
+
+        marker = L.circleMarker(position, {
+            radius:10,
+            color:"#fff",
+            weight:3,
+            fillColor:"#a8895a",
+            fillOpacity:1
+        }).addTo(map);
+
+    } else {
+
+        marker.setLatLng(position);
+
+    }
+
+
+    // Update jejak lokasi
+
+    const points = jejak.getLatLngs();
+
+    if (
+        !points.length ||
+        points[points.length - 1].lat !== lat ||
+        points[points.length - 1].lng !== lng
+    ) {
+
+        jejak.addLatLng(position);
+
+    }
+
+
+    // Fokus lokasi pertama kali
+
+    if (firstGPS) {
+
+        map.setView(position, 17);
+        firstGPS = false;
+
+    } else {
+
+        map.panTo(position);
+
+    }
+}
+
+
+// =================================================
+// 6. FUNGSI MEMPERBARUI DATA BERDASARKAN PATH
+// =================================================
+
+function setAtPath(object, path, value) {
+
+    const keys = path.split("/").filter(Boolean);
+
+    if (keys.length === 0) {
+        return value || {};
+    }
+
+    let current = object;
+
+    for (let i = 0; i < keys.length - 1; i++) {
+
+        if (
+            !current[keys[i]] ||
+            typeof current[keys[i]] !== "object"
+        ) {
+            current[keys[i]] = {};
+        }
+
+        current = current[keys[i]];
+    }
+
+    current[keys[keys.length - 1]] = value;
+
+    return object;
+}
+
+
+function applyFirebaseEvent(message, eventType) {
+
+    if (message.path === "/") {
+
+        if (eventType === "put") {
+
+            state = message.data || {};
+
+        } else {
+
+            Object.assign(state, message.data || {});
+
+        }
+
+        return;
+    }
+
+    if (eventType === "put") {
+
+        state = setAtPath(
+            state,
+            message.path,
+            message.data
+        );
+
+        return;
+    }
+
+    // PATCH: setiap key dalam data adalah child dari message.path
+
+    const patchData = message.data || {};
+
+    Object.entries(patchData).forEach(([key, value]) => {
+
+        const path =
+            message.path === "/"
+                ? "/" + key
+                : message.path + "/" + key;
+
+        state = setAtPath(state, path, value);
+
+    });
+}
+
+
+// =================================================
+// 7. RENDER SEMUA DATA
+// =================================================
+
+function render() {
+
+    updateJarak();
+
+    updateLokasi();
+
+    $("sinyal").textContent =
+        new Date().toLocaleTimeString("id-ID", {
+            hour12:false
+        });
+
+    console.log("Firebase state:", state);
+}
+
+
+// =================================================
+// 8. FIREBASE REALTIME STREAMING
+// =================================================
+
 const es = new EventSource(DB_URL);
-es.addEventListener('put', e => {
-  const m = JSON.parse(e.data);
-  if (m.path === '/') { if (m.data) state = m.data; }
-  else state[m.path.slice(1)] = m.data;
-  conn('on', 'Terhubung, data masuk langsung');
-  render();
+
+
+es.addEventListener("put", event => {
+
+    try {
+
+        const message = JSON.parse(event.data);
+
+        applyFirebaseEvent(message, "put");
+
+        render();
+
+        $("dot").className = "dot";
+
+        $("stat").textContent =
+            "Terhubung, data Firebase diterima";
+
+    } catch (error) {
+
+        console.error("Firebase PUT error:", error);
+
+    }
+
 });
-es.addEventListener('patch', e => { Object.assign(state, JSON.parse(e.data).data); render(); });
-es.onerror = () => conn('err', 'Koneksi terputus, mencoba lagi');
+
+
+es.addEventListener("patch", event => {
+
+    try {
+
+        const message = JSON.parse(event.data);
+
+        applyFirebaseEvent(message, "patch");
+
+        render();
+
+    } catch (error) {
+
+        console.error("Firebase PATCH error:", error);
+
+    }
+
+});
+
+
+es.onopen = () => {
+
+    $("dot").className = "dot";
+
+    $("stat").textContent =
+        "Koneksi Firebase aktif";
+
+};
+
+
+es.onerror = error => {
+
+    console.error("Firebase connection error:", error);
+
+    $("dot").className = "dot off";
+
+    $("stat").textContent =
+        "Koneksi Firebase terputus, mencoba kembali";
+
+};
+
 </script>
+
 </body>
 </html>
