@@ -3,304 +3,168 @@
 <html lang="id">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>SIGMA Care</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SIGMA Care - Monitoring</title>
 
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;700;800&display=swap" rel="stylesheet">
-
+<!-- Leaflet Map -->
 <link rel="stylesheet"
-href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css">
+href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<!-- Firebase -->
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
 
 <style>
-:root {
-    --slate:#3b4660;
-    --slate2:#2f394f;
-    --ink:#334155;
-    --mint:#dcf5e5;
-    --mintTx:#15803d;
-    --red:#fde2e2;
-    --redTx:#b91c1c;
-    --gold:#a8895a;
-    --mute:#cbd3e1;
-    --ok:#22c55e;
-    --bad:#ef4444;
-}
-
 * {
-    box-sizing:border-box;
-    margin:0;
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: Arial, sans-serif;
 }
 
 body {
-    font-family:'Plus Jakarta Sans',system-ui,sans-serif;
-    background:#fff;
-    color:var(--ink);
-    display:flex;
-    justify-content:center;
+    background: #f1f5f9;
+    color: #1e293b;
 }
 
-main {
-    width:100%;
-    max-width:1180px;
-    padding:22px 24px 28px;
+header {
+    background: #0f172a;
+    color: white;
+    padding: 20px;
 }
 
-.grid {
-    display:grid;
-    grid-template-columns:minmax(0,5fr) minmax(0,6fr);
-    gap:21px;
-    align-items:stretch;
+header h1 {
+    font-size: 23px;
 }
 
-.col {
-    display:flex;
-    flex-direction:column;
+header p {
+    color: #cbd5e1;
+    margin-top: 5px;
 }
 
-.col .card {
-    margin-bottom:21px;
+.container {
+    max-width: 1100px;
+    margin: auto;
+    padding: 20px;
 }
 
-.col:last-child .card {
-    margin-bottom:0;
-}
-
-.mapcard {
-    display:flex;
-    flex-direction:column;
-    height:100%;
-}
-
-.radar {
-    position:relative;
-    height:210px;
-    padding:0;
-    overflow:hidden;
-    margin-bottom:0!important;
-}
-
-.radar svg {
-    position:absolute;
-    inset:0;
-    width:100%;
-    height:100%;
-}
-
-.radar .cap {
-    position:absolute;
-    right:24px;
-    bottom:18px;
-    text-align:right;
-    font-weight:700;
-    font-size:16px;
-    line-height:1.3;
-}
-
-#obj {
-    transition:cx .5s;
-}
-
-.brand {
-    display:flex;
-    align-items:center;
-    gap:14px;
-    margin-bottom:22px;
-}
-
-.logo {
-    width:60px;
-    height:60px;
-    border-radius:14px;
-    background:var(--slate);
-    color:#fff;
-    font-size:34px;
-    font-weight:800;
-    display:grid;
-    place-items:center;
-}
-
-h1 {
-    font-size:25px;
-    font-weight:700;
+.status-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 15px;
+    margin-bottom: 20px;
 }
 
 .card {
-    background:var(--slate);
-    color:#fff;
-    border-radius:28px;
-    padding:24px;
-    margin-bottom:21px;
+    background: white;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 2px 8px rgba(0,0,0,.06);
 }
 
-.row {
-    display:flex;
-    justify-content:space-between;
-    align-items:flex-start;
-    gap:12px;
+.card h3 {
+    font-size: 14px;
+    color: #64748b;
+    margin-bottom: 12px;
 }
 
-.card h2 {
-    font-size:21px;
-    font-weight:700;
+.value {
+    font-size: 30px;
+    font-weight: bold;
 }
 
-.card p.s {
-    color:var(--mute);
-    margin-top:2px;
-    font-size:16px;
-}
-
-.badge {
-    padding:9px 17px;
-    border-radius:99px;
-    font-weight:700;
-    font-size:16px;
-    background:var(--mint);
-    color:var(--mintTx);
-}
-
-.badge.warn {
-    background:var(--red);
-    color:var(--redTx);
-}
-
-hr {
-    border:0;
-    border-top:1px solid rgba(255,255,255,.15);
-    margin:18px 0;
-}
-
-.k {
-    color:var(--mute);
-    font-size:16px;
-}
-
-.v {
-    font-weight:700;
-    font-size:19px;
-}
-
-.r {
-    text-align:right;
-}
-
-.big {
-    font-size:35px;
-    font-weight:800;
-    margin:8px 0 4px;
-    color:var(--mute);
-}
-
-.big.warn {
-    color:#ffb4b4;
-}
-
-.bar {
-    height:19px;
-    border-radius:99px;
-    background:var(--slate2);
-    overflow:hidden;
-    margin-top:22px;
-}
-
-.fill {
-    height:100%;
-    width:0;
-    transition:width .5s;
-    background:repeating-linear-gradient(
-        120deg,
-        var(--gold) 0 10px,
-        #3b4660 10px 18px
-    );
-}
-
-.scale {
-    display:flex;
-    justify-content:space-between;
-    color:var(--mute);
-    margin-top:8px;
-    font-size:16px;
-}
-
-#map {
-    flex:1;
-    min-height:420px;
-    border-radius:20px;
-    margin-top:16px;
-    background:var(--slate2);
-    z-index:0;
-}
-
-.gps {
-    display:grid;
-    grid-template-columns:1fr 1fr;
-    gap:14px 12px;
-    margin-top:16px;
-}
-
-.btn {
-    display:inline-block;
-    margin-top:16px;
-    padding:11px 18px;
-    border-radius:99px;
-    background:#fff;
-    color:var(--slate);
-    font-weight:700;
-    text-decoration:none;
-    font-size:15px;
-}
-
-.btn.off {
-    opacity:.4;
-    pointer-events:none;
+.unit {
+    font-size: 14px;
+    color: #64748b;
 }
 
 .status {
-    text-align:center;
-    color:#64748b;
-    font-size:14px;
-    display:flex;
-    justify-content:center;
-    align-items:center;
-    gap:9px;
-    flex-wrap:wrap;
+    display: inline-block;
+    padding: 8px 14px;
+    border-radius: 20px;
+    font-weight: bold;
+    background: #dcfce7;
+    color: #166534;
 }
 
-.dot {
-    width:12px;
-    height:12px;
-    border-radius:50%;
-    background:var(--ok);
+.status.danger {
+    background: #fee2e2;
+    color: #991b1b;
 }
 
-.dot.off {
-    background:var(--bad);
+.status.unknown {
+    background: #e2e8f0;
+    color: #475569;
 }
 
-@media(max-width:900px) {
-    .grid {
-        grid-template-columns:1fr;
-    }
+.section-title {
+    margin-bottom: 15px;
+    font-size: 19px;
+}
 
-    .mapcard {
-        height:auto;
+#map {
+    height: 400px;
+    width: 100%;
+    border-radius: 12px;
+    z-index: 1;
+}
+
+.gps-info {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 12px;
+    margin-top: 15px;
+}
+
+.gps-item {
+    background: #f8fafc;
+    padding: 15px;
+    border-radius: 8px;
+}
+
+.gps-item small {
+    color: #64748b;
+    display: block;
+    margin-bottom: 8px;
+}
+
+.gps-item strong {
+    font-size: 16px;
+    overflow-wrap: anywhere;
+}
+
+.map-button {
+    display: inline-block;
+    background: #2563eb;
+    color: white;
+    padding: 11px 16px;
+    border-radius: 8px;
+    text-decoration: none;
+    margin-top: 15px;
+}
+
+.connection {
+    font-size: 13px;
+    margin-top: 12px;
+    color: #64748b;
+}
+
+footer {
+    text-align: center;
+    padding: 20px;
+    color: #64748b;
+    font-size: 13px;
+}
+
+@media(max-width: 600px) {
+    .container {
+        padding: 12px;
     }
 
     #map {
-        min-height:340px;
-        flex:none;
-        height:340px;
-    }
-}
-
-@media(max-width:480px) {
-    main {
-        padding:16px;
-    }
-
-    .big {
-        font-size:28px;
+        height: 320px;
     }
 }
 </style>
@@ -308,621 +172,313 @@ hr {
 
 <body>
 
-<main>
-
-<div class="brand">
-    <div class="logo">Σ</div>
+<header>
     <h1>SIGMA Care</h1>
-</div>
+    <p>Smart Intelligent Guidance & Mobility Assistant</p>
+</header>
 
-<div class="grid">
+<div class="container">
 
-<!-- KOLOM SENSOR -->
-<div class="col">
+    <!-- MONITORING SENSOR -->
+    <div class="status-grid">
 
-<section class="card">
-
-    <div class="row">
-        <div>
-            <h2>Tongkat SIGMA</h2>
-            <p class="s">Sistem pemantauan jarak halangan</p>
-        </div>
-
-        <span class="badge" id="badge">Menunggu</span>
-    </div>
-
-    <hr>
-
-    <div class="row">
-        <div>
-            <div class="k">Sinyal masuk</div>
-            <div class="v" id="sinyal">--:--:--</div>
-        </div>
-
-        <div class="r">
-            <div class="k">Batas peringatan</div>
-            <div class="v">
-                <span id="batas">50</span> cm
+        <div class="card">
+            <h3>Jarak Terukur</h3>
+            <div class="value">
+                <span id="distance">--</span>
+                <span class="unit">cm</span>
             </div>
         </div>
-    </div>
 
-</section>
-
-<section class="card">
-
-    <div class="v" style="font-size:18px">
-        Jarak halangan di depan
-    </div>
-
-    <div class="big" id="jarak">
-        Menunggu data
-    </div>
-
-    <p class="s" id="jarakSub" style="color:var(--mute)">
-        Belum ada data dari tongkat
-    </p>
-
-    <div class="bar">
-        <div class="fill" id="fill"></div>
-    </div>
-
-    <div class="scale">
-        <span>0</span>
-        <span>100</span>
-        <span>200</span>
-        <span>300</span>
-        <span>400 cm</span>
-    </div>
-
-</section>
-
-<section class="card radar" aria-hidden="true">
-
-    <svg viewBox="0 0 600 210"
-         preserveAspectRatio="xMidYMid slice">
-
-        <circle cx="90" cy="105" r="30"
-                fill="none"
-                stroke="#8b96ad"
-                stroke-width="3"/>
-
-        <circle cx="90" cy="105" r="15"
-                fill="#fff"/>
-
-        <path d="M135 65 Q152 105 135 145"
-              fill="none"
-              stroke="#fff"
-              stroke-width="3"/>
-
-        <path d="M170 45 Q205 105 170 165"
-              fill="none"
-              stroke="#e5e9f2"
-              stroke-width="3"/>
-
-        <path d="M212 20 Q268 105 212 190"
-              fill="none"
-              stroke="#b7c0d3"
-              stroke-width="3"/>
-
-        <path d="M262 5 Q330 105 262 205"
-              fill="none"
-              stroke="#8b96ad"
-              stroke-width="3"/>
-
-        <path d="M318 0 Q392 105 318 210"
-              fill="none"
-              stroke="#6b7690"
-              stroke-width="3"/>
-
-        <circle id="obj"
-                cx="560"
-                cy="105"
-                r="10"
-                fill="#a8895a"/>
-
-    </svg>
-
-    <div class="cap">
-        Smart Intelligent Guidance<br>
-        &amp; Mobility Assistant
-    </div>
-
-</section>
-
-</div>
-
-
-<!-- KOLOM MAPS -->
-<div class="col">
-
-<section class="card mapcard">
-
-    <div class="row">
-        <div>
-            <h2>Lokasi pengguna</h2>
-            <p class="s" id="gpsInfo">
-                Menunggu data GPS
-            </p>
-        </div>
-    </div>
-
-    <div id="map"></div>
-
-    <div class="gps">
-
-        <div>
-            <div class="k">Latitude</div>
-            <div class="v" id="lat">-</div>
+        <div class="card">
+            <h3>Status Peringatan</h3>
+            <div>
+                <span class="status unknown" id="warning">
+                    MENUNGGU DATA
+                </span>
+            </div>
         </div>
 
-        <div class="r">
-            <div class="k">Longitude</div>
-            <div class="v" id="lng">-</div>
-        </div>
-
-        <div>
-            <div class="k">Waktu GPS (WIB)</div>
-            <div class="v" id="wgps">-</div>
-        </div>
-
-        <div class="r">
-            <div class="k">Satelit / Kecepatan</div>
-            <div class="v" id="sat">-</div>
+        <div class="card">
+            <h3>Status GPS</h3>
+            <div>
+                <span class="status unknown" id="gpsStatus">
+                    MENUNGGU GPS
+                </span>
+            </div>
         </div>
 
     </div>
 
-    <div>
-        <a class="btn off"
-           id="gmaps"
-           target="_blank"
-           rel="noopener">
+    <!-- GPS MAP -->
+    <div class="card">
+
+        <h2 class="section-title">Lokasi GPS</h2>
+
+        <div id="map"></div>
+
+        <div class="gps-info">
+
+            <div class="gps-item">
+                <small>Latitude</small>
+                <strong id="latitude">--</strong>
+            </div>
+
+            <div class="gps-item">
+                <small>Longitude</small>
+                <strong id="longitude">--</strong>
+            </div>
+
+            <div class="gps-item">
+                <small>Jumlah Satelit</small>
+                <strong id="satellite">--</strong>
+            </div>
+
+            <div class="gps-item">
+                <small>Kecepatan</small>
+                <strong id="speed">-- km/h</strong>
+            </div>
+
+        </div>
+
+        <a href="#" target="_blank" class="map-button"
+           id="googleMaps" style="display:none">
             Buka di Google Maps
         </a>
+
+        <p class="connection" id="gpsUpdated">
+            Menunggu pembaruan lokasi GPS...
+        </p>
+
     </div>
 
-</section>
+    <p class="connection" id="connection">
+        Menghubungkan ke Firebase...
+    </p>
 
 </div>
-</div>
 
-
-<div class="status" style="margin-top:21px">
-    <span class="dot off" id="dot"></span>
-    <span id="stat">Menghubungkan ke Firebase...</span>
-</div>
-
-</main>
-
-
-<!-- LEAFLET -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js"></script>
-
+<footer>
+    SIGMA Care Monitoring System
+</footer>
 
 <script>
 
-// =================================================
-// 1. KONFIGURASI FIREBASE
-// =================================================
+// =====================================
+// FIREBASE CONFIGURATION
+// =====================================
 
-const DB_URL =
-"https://sigma-d48ff-default-rtdb.asia-southeast1.firebasedatabase.app/sigma.json";
+const firebaseConfig = {
+    databaseURL:
+    "https://sigma-d48ff-default-rtdb.asia-southeast1.firebasedatabase.app"
+};
 
-const BATAS_CM = 50;
-const MAX_DISTANCE = 400;
+firebase.initializeApp(firebaseConfig);
 
-const $ = id => document.getElementById(id);
-
-$("batas").textContent = BATAS_CM;
+const database = firebase.database();
 
 
-// =================================================
-// 2. INISIALISASI MAPS
-// =================================================
+// =====================================
+// PETA LEAFLET
+// =====================================
 
-let map = null;
-let marker = null;
-let jejak = null;
-let firstGPS = true;
+const map = L.map('map').setView(
+    [-7.460395, 110.213621],
+    15
+);
 
-function initMap() {
+L.tileLayer(
+    'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+    {
+        attribution: '&copy; OpenStreetMap'
+    }
+).addTo(map);
 
-    if (typeof L === "undefined") {
-        $("gpsInfo").textContent =
-            "Leaflet gagal dimuat. Periksa koneksi internet.";
-        return;
+let gpsMarker = null;
+
+let firstLocation = true;
+
+
+// =====================================
+// STATUS KONEKSI FIREBASE
+// =====================================
+
+database.ref('.info/connected').on('value', snapshot => {
+
+    const connected = snapshot.val();
+
+    const connection = document.getElementById('connection');
+
+    if (connected) {
+        connection.textContent = "Terhubung ke Firebase";
+        connection.style.color = "#16a34a";
+    } else {
+        connection.textContent = "Koneksi Firebase terputus";
+        connection.style.color = "#dc2626";
     }
 
-    map = L.map("map").setView([-2.5, 118], 4);
-
-    L.tileLayer(
-        "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
-        {
-            maxZoom:19,
-            attribution:"&copy; OpenStreetMap contributors"
-        }
-    ).addTo(map);
-
-    jejak = L.polyline([], {
-        color:"#a8895a",
-        weight:4
-    }).addTo(map);
-
-    setTimeout(() => map.invalidateSize(), 500);
-}
-
-initMap();
-
-window.addEventListener("resize", () => {
-    if (map) map.invalidateSize();
 });
 
 
-// =================================================
-// 3. DATA FIREBASE
-// =================================================
+// =====================================
+// MONITORING JARAK DAN PERINGATAN
+// =====================================
 
-let state = {};
+database.ref('/sigma').on('value', snapshot => {
+
+    const data = snapshot.val();
+
+    if (!data) return;
+
+    // Jarak
+    if (data.distance !== undefined &&
+        data.distance !== null) {
+
+        document.getElementById('distance').textContent =
+            Number(data.distance).toFixed(1);
+
+    }
+
+    // Status bahaya
+    const warning = document.getElementById('warning');
+
+    if (data.warning === true) {
+
+        warning.textContent = "BAHAYA";
+        warning.className = "status danger";
+
+    } else if (data.warning === false) {
+
+        warning.textContent = "AMAN";
+        warning.className = "status";
+
+    }
+
+});
 
 
-// =================================================
-// 4. UPDATE SENSOR HC-SR04
-// =================================================
+// =====================================
+// MONITORING GPS
+// =====================================
 
-function updateJarak() {
+database.ref('/sigma/lokasi').on('value', snapshot => {
 
-    const distance = Number(state.distance);
+    const data = snapshot.val();
 
-    const invalid =
-        state.distance == null ||
-        !Number.isFinite(distance) ||
-        distance < 0 ||
-        distance > MAX_DISTANCE;
+    console.log("Data GPS Firebase:", data);
 
-    if (invalid) {
+    if (!data) {
 
-        $("jarak").textContent = "Di luar jangkauan";
-
-        $("jarakSub").textContent =
-            "Tidak ada pantulan dalam 4 meter";
-
-        $("jarak").className = "big";
-
-        $("badge").textContent = "Aman";
-        $("badge").className = "badge";
-
-        $("fill").style.width = "0%";
-
-        $("obj").setAttribute("cx", 560);
+        document.getElementById('gpsStatus').textContent =
+            "DATA GPS KOSONG";
 
         return;
     }
 
-    const warning = state.warning === true;
-    const bahaya = warning || distance <= BATAS_CM;
+    const gpsStatus = document.getElementById('gpsStatus');
 
-    $("jarak").textContent =
-        distance.toFixed(1) + " cm";
+    // Memeriksa GPS Fix
+    if (data.fix !== true) {
 
-    $("jarak").className =
-        "big" + (bahaya ? " warn" : "");
+        gpsStatus.textContent = "GPS BELUM FIX";
+        gpsStatus.className = "status unknown";
 
-    $("jarakSub").textContent = bahaya
-        ? "Halangan berada dalam batas peringatan"
-        : "Jarak halangan terdeteksi";
-
-    $("fill").style.width =
-        Math.max(0, Math.min(100,
-            distance / MAX_DISTANCE * 100
-        )) + "%";
-
-    $("obj").setAttribute(
-        "cx",
-        140 + (distance / MAX_DISTANCE * 420)
-    );
-
-    $("badge").textContent =
-        bahaya ? "Waspada" : "Aman";
-
-    $("badge").className =
-        "badge" + (bahaya ? " warn" : "");
-}
-
-
-// =================================================
-// 5. UPDATE GPS DAN MAPS
-// =================================================
-
-function wib(utc) {
-
-    const match = /^(\d{1,2}):(\d{2}):(\d{2})$/.exec(
-        utc || ""
-    );
-
-    if (!match) return "-";
-
-    const hour = (Number(match[1]) + 7) % 24;
-
-    return String(hour).padStart(2, "0") +
-        ":" + match[2] +
-        ":" + match[3];
-}
-
-
-function updateLokasi() {
-
-    const d = state.lokasi;
-
-    if (!d || typeof d !== "object") {
-
-        $("gpsInfo").textContent =
-            "Belum ada data GPS di Firebase";
+        document.getElementById('gpsUpdated').textContent =
+            "GPS belum mendapatkan posisi yang valid.";
 
         return;
     }
 
-    const lat = Number(d.lat);
-    const lng = Number(d.lng);
+    const lat = Number(data.lat);
+    const lng = Number(data.lng);
 
-    const fix = d.fix === true || d.fix === 1;
-
-    if (
-        !fix ||
-        !Number.isFinite(lat) ||
+    // Validasi koordinat
+    if (!Number.isFinite(lat) ||
         !Number.isFinite(lng) ||
-        Math.abs(lat) > 90 ||
-        Math.abs(lng) > 180
-    ) {
+        lat < -90 || lat > 90 ||
+        lng < -180 || lng > 180) {
 
-        $("gpsInfo").textContent =
-            "GPS belum mendapatkan koordinat valid";
-
-        $("sat").textContent =
-            (d.sat ?? 0) + " satelit";
+        gpsStatus.textContent = "KOORDINAT TIDAK VALID";
+        gpsStatus.className = "status danger";
 
         return;
     }
 
-    $("gpsInfo").textContent =
-        "Lokasi terakhir berhasil diterima";
+    // Status GPS
+    gpsStatus.textContent = "GPS AKTIF";
+    gpsStatus.className = "status";
 
-    $("lat").textContent = lat.toFixed(6);
-    $("lng").textContent = lng.toFixed(6);
+    // Latitude dan Longitude
+    document.getElementById('latitude').textContent =
+        lat.toFixed(6);
 
-    $("wgps").textContent = wib(d.waktu_utc);
+    document.getElementById('longitude').textContent =
+        lng.toFixed(6);
 
-    $("sat").textContent =
-        (d.sat ?? "-") + " / " +
-        Number(d.kecepatan || 0).toFixed(1) +
-        " km/j";
+    // Jumlah satelit
+    document.getElementById('satellite').textContent =
+        data.sat ?? "--";
 
-    const g = $("gmaps");
+    // Kecepatan
+    document.getElementById('speed').textContent =
+        Number(data.kecepatan ?? 0).toFixed(1) + " km/h";
 
-    g.href =
-        d.link ||
-        `https://www.google.com/maps?q=${lat},${lng}`;
+    // Marker peta
+    const posisi = [lat, lng];
 
-    g.classList.remove("off");
+    if (gpsMarker === null) {
 
+        gpsMarker = L.marker(posisi).addTo(map);
 
-    // Update marker
-
-    const position = [lat, lng];
-
-    if (!marker) {
-
-        marker = L.circleMarker(position, {
-            radius:10,
-            color:"#fff",
-            weight:3,
-            fillColor:"#a8895a",
-            fillOpacity:1
-        }).addTo(map);
-
-    } else {
-
-        marker.setLatLng(position);
-
-    }
-
-
-    // Update jejak lokasi
-
-    const points = jejak.getLatLngs();
-
-    if (
-        !points.length ||
-        points[points.length - 1].lat !== lat ||
-        points[points.length - 1].lng !== lng
-    ) {
-
-        jejak.addLatLng(position);
-
-    }
-
-
-    // Fokus lokasi pertama kali
-
-    if (firstGPS) {
-
-        map.setView(position, 17);
-        firstGPS = false;
-
-    } else {
-
-        map.panTo(position);
-
-    }
-}
-
-
-// =================================================
-// 6. FUNGSI MEMPERBARUI DATA BERDASARKAN PATH
-// =================================================
-
-function setAtPath(object, path, value) {
-
-    const keys = path.split("/").filter(Boolean);
-
-    if (keys.length === 0) {
-        return value || {};
-    }
-
-    let current = object;
-
-    for (let i = 0; i < keys.length - 1; i++) {
-
-        if (
-            !current[keys[i]] ||
-            typeof current[keys[i]] !== "object"
-        ) {
-            current[keys[i]] = {};
-        }
-
-        current = current[keys[i]];
-    }
-
-    current[keys[keys.length - 1]] = value;
-
-    return object;
-}
-
-
-function applyFirebaseEvent(message, eventType) {
-
-    if (message.path === "/") {
-
-        if (eventType === "put") {
-
-            state = message.data || {};
-
-        } else {
-
-            Object.assign(state, message.data || {});
-
-        }
-
-        return;
-    }
-
-    if (eventType === "put") {
-
-        state = setAtPath(
-            state,
-            message.path,
-            message.data
+        gpsMarker.bindPopup(
+            "Lokasi SIGMA Care"
         );
 
-        return;
+    } else {
+
+        gpsMarker.setLatLng(posisi);
     }
 
-    // PATCH: setiap key dalam data adalah child dari message.path
+    // Fokus peta pada lokasi GPS pertama
+    if (firstLocation) {
 
-    const patchData = message.data || {};
+        map.setView(posisi, 17);
 
-    Object.entries(patchData).forEach(([key, value]) => {
-
-        const path =
-            message.path === "/"
-                ? "/" + key
-                : message.path + "/" + key;
-
-        state = setAtPath(state, path, value);
-
-    });
-}
-
-
-// =================================================
-// 7. RENDER SEMUA DATA
-// =================================================
-
-function render() {
-
-    updateJarak();
-
-    updateLokasi();
-
-    $("sinyal").textContent =
-        new Date().toLocaleTimeString("id-ID", {
-            hour12:false
-        });
-
-    console.log("Firebase state:", state);
-}
-
-
-// =================================================
-// 8. FIREBASE REALTIME STREAMING
-// =================================================
-
-const es = new EventSource(DB_URL);
-
-
-es.addEventListener("put", event => {
-
-    try {
-
-        const message = JSON.parse(event.data);
-
-        applyFirebaseEvent(message, "put");
-
-        render();
-
-        $("dot").className = "dot";
-
-        $("stat").textContent =
-            "Terhubung, data Firebase diterima";
-
-    } catch (error) {
-
-        console.error("Firebase PUT error:", error);
-
+        firstLocation = false;
     }
+
+    // Link Google Maps
+    const mapsLink =
+        "https://www.google.com/maps?q=" + lat + "," + lng;
+
+    const mapsButton =
+        document.getElementById('googleMaps');
+
+    mapsButton.href = mapsLink;
+    mapsButton.style.display = "inline-block";
+
+    // Waktu pembaruan
+    document.getElementById('gpsUpdated').textContent =
+        "Lokasi berhasil diperbarui. Uptime ESP32: " +
+        (data.uptime_s ?? "--") + " detik.";
 
 });
 
 
-es.addEventListener("patch", event => {
+// =====================================
+// ERROR HANDLER
+// =====================================
 
-    try {
+database.ref('/sigma/lokasi').on(
+    'value',
+    null,
+    error => {
+        console.error("Firebase GPS Error:", error);
 
-        const message = JSON.parse(event.data);
-
-        applyFirebaseEvent(message, "patch");
-
-        render();
-
-    } catch (error) {
-
-        console.error("Firebase PATCH error:", error);
-
+        document.getElementById('gpsStatus').textContent =
+            "GAGAL MEMBACA GPS";
     }
-
-});
-
-
-es.onopen = () => {
-
-    $("dot").className = "dot";
-
-    $("stat").textContent =
-        "Koneksi Firebase aktif";
-
-};
-
-
-es.onerror = error => {
-
-    console.error("Firebase connection error:", error);
-
-    $("dot").className = "dot off";
-
-    $("stat").textContent =
-        "Koneksi Firebase terputus, mencoba kembali";
-
-};
+);
 
 </script>
 
